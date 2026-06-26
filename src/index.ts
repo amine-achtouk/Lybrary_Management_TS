@@ -94,15 +94,22 @@ const borrowBook = (id: number,bookId: number, borrower: string, days: number) =
     return "Book borrowed successfully";
 }
 
+const returnBook = (bookId: number) => {
+    const findBookToReturn = books.find(b => b.id === bookId);
+    if(!findBookToReturn) return "Book not found";
+    findBookToReturn.available = true;
+    return "Book returned successfully";
+}
+
 
 const response: ApiResponse<Book[]> = {
     success: true,
     message: "",
-    data: [{ id: 9,title: "Antigone",author: "F. Ahmed",pages: 180,category: "Novel",available: true}]
+    data: books
 }
 
 const successRes: Result<Book, null> = {
-    data: { id: 9,title: "Antigone",author: "F. Ahmed",pages: 180,category: "Novel",available: true},
+    data: books[0]!,
     error: null
 }
 
@@ -112,21 +119,27 @@ const ErrorRes: Result<null, string> = {
 }
 
 const book: Box<Book> = {
-    value: { id: 10,title: "La Boite ",author: "F. Ahmed Safroui",pages: 180,category: "Novel",available: false}
+    value: books[0]!
 }
 
 
-const getFirst = <T>(books: T[]) => {
-    return books[0]
+const getFirst = <T>(arr: T[]) => {
+    return arr[0]
 }
 
-const getLast = <T>(books: T[]) => {
-    
+const getLast = <T>(arr: T[]) => {
+    return arr[arr.length - 1];
 }
 
-const duplicate = <T>(books: T[]) => {
-    return [books, books]
+const duplicate = <T>(item: T) => {
+    return [item, item]
 }
+
+
+const wrapInObject = <T>(value: T): { data: T } => {
+    return { data: value };
+};
+
 
 const getId = <T extends { id: number }>(item: T) => {
     return item.id
@@ -138,7 +151,12 @@ const printTitle = <T extends {title: string;}>(book: T) => {
 
 
 const printBook = <T extends Book>(book: T) => {
-    console.log(`${book.id} - ${book.title}`)
+    console.log(`ID: ${book.id}`);
+    console.log(`Title: ${book.title}`);
+    console.log(`Author: ${book.author}`);
+    console.log(`Category: ${book.category}`);
+    console.log(`Pages: ${book.pages}`);
+    console.log(`Available: ${book.available}`);
 }
 
 
@@ -151,17 +169,23 @@ const searchBooks = (keyword: string) => {
 
 
 const getStatistics = (books: Book[], records: BorrowRecord[] ) => {
-    return books.length
-    return books.find(b => b.available === true)
-    return records.length
     let totalPages: number = 0
-    books.forEach(book => {
-        totalPages += book.pages
-    });
-    return totalPages
+    books.forEach(book => totalPages += book.pages);
+    return books.length
+    const availableCount = books.filter(b => b.available === true).length;
+    const borrowedCount = books.filter(b => b.available === false).length;
+    return {
+        totalBooks: books.length,
+        availableBooks: availableCount,
+        borrowedBooks: borrowedCount,
+        totalPages: totalPages
+    }
+
+
 }
 
 
 const recommendBooks = (category : BookCategory) => {
-    return books.filter( b => b.category === category)
+    const filtered = books.filter(b => b.category === category);
+    return filtered.slice(0, 3);
 }
